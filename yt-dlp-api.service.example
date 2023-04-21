@@ -1,0 +1,14 @@
+[Unit]
+Description=CarbonManagementServer
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+User=lee
+Restart=always
+Type=simple
+WorkingDirectory=/data/carbon-management-server
+ExecStart=/home/lee/.local/bin/pipenv run gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app --error-logfile /data/carbon-management-server/error_log.txt
+
+[Install]
+WantedBy=multi-user.target
