@@ -1,4 +1,5 @@
 import yt_dlp
+from urllib.parse import urlparse
 
 
 async def get_api_version():
@@ -13,6 +14,12 @@ async def extract_video_info(video_url: str = ''):
     }
 
     response = {'error': None}
+
+    parsed_url_result = urlparse(video_url)
+    if parsed_url_result.netloc != 'www.youtube.com':
+        response['error'] = 'Unsupported %!' % parsed_url_result.netloc
+
+        return response
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         try:
