@@ -17,7 +17,7 @@ async def extract_video_info(video_url: str = ''):
 
     parsed_url_result = urlparse(video_url)
     if parsed_url_result.netloc != 'www.youtube.com':
-        response['error'] = 'Unsupported %s!' % parsed_url_result.netloc
+        response['error'] = 'Unsupported %s!' % video_url
 
         return response
 
