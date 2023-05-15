@@ -12,13 +12,16 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: '3.8'
-      - name: Install dependencies with the pipenv
+      - name: Install the pipenv
         run: pip install pipenv --user
-      - name: Setup Python virtual environment
+      - name: Setup Python virtual environment and install dependencies
         run: |
           PATH=$PATH:/home/peter/.local/bin
           pipenv install
-      - name: Install development dependencies with the pipenv
+      - name: Setup Python virtual environment and install development dependencies
+        run: |
+          PATH=$PATH:/home/peter/.local/bin
+          pipenv install --dev
       - name: Run tests
         run: |
           pipenv run pytest -s
