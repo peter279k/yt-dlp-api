@@ -12,3 +12,4 @@ yt_dlp = "*"
 
 [dev-packages]
 pytest = "*"
+httpx="*"
