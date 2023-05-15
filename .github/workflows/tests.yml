@@ -1,5 +1,7 @@
 name: API Tests
 
+on: [ push, pull_request ]
+
 jobs:
   up-and-running:
     runs-on: ubuntu-latest
