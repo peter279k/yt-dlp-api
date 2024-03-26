@@ -6,8 +6,8 @@ name = "pypi"
 [packages]
 fastapi = "*"
 fastapi-pagination = "*"
-uvicorn = "[standard]"
-gunicorn = "[standard]"
+uvicorn = "0.23.2"
+gunicorn = "21.2.0"
 yt_dlp = "*"
 
 [dev-packages]
