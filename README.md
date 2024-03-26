@@ -15,3 +15,7 @@ The simple yt-dlp-api server is for extracting YouTube video information with Yo
 - Running the `sudo systemctl daemon-reload` to reload the systemd daemon.
 - Running the `sudo systemctl enable --now yt-dlp-api.service` to enable and start the service.
 - Enjoy it!
+
+# Tips
+
+- Sometimes the `yt-dlp` are updated frequently and it can run the `pipenv run pip install -U yt-dlp` command to upgrade this package and run the `systemctl restart yt-dlp-api.service` command to restart the daemon service.
