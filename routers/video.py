@@ -27,6 +27,8 @@ async def extract_video_info(video_url: str = ''):
 
             response = {'links': []}
             for format_lists in info['formats']:
+                if format_lists.get('acodec') is None:
+                    continue
                 if format_lists['acodec'] != 'none' and format_lists['vcodec'] != 'none' and format_lists['resolution'] != 'audio only' and format_lists['ext'] == 'mp4':
                     response['links'].append({
                         'format': format_lists['ext'],
