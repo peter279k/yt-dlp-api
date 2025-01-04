@@ -19,3 +19,4 @@ The simple yt-dlp-api server is for extracting YouTube video information with Yo
 # Tips
 
 - Sometimes the `yt-dlp` are updated frequently and it can run the `pipenv run pip install -U yt-dlp` command to upgrade this package and run the `systemctl restart yt-dlp-api.service` command to restart the daemon service.
+- Since the yt-dlp `2024.11.04` version has been released, the minimal Python version is `3.9` and the `yt-dlp-api` will support Python `3.9` at least becasue of compatibility.
