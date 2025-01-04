@@ -8,5 +8,5 @@ setup(name='yt-dlp-api',
       author_email='peter279k@gmail.com',
       packages=['modules', 'routers'],
       license='MIT',
-      python_requires=">=3.7",
+      python_requires=">=3.9",
       zip_safe=False)
