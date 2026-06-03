@@ -72,7 +72,7 @@ async def check_status(job_id: str) -> dict:
     return {"status": "processing"}
 
 async def get_file(filename: str) -> FileResponse:
-    filepath = os.path.join(DOWNLOAD_DIR, filename)
+    filepath = os.path.join(DOWNLOAD_DIR, f"{filename}.mp4")
     if not os.path.exists(filepath):
         raise HTTPException(status_code=404, detail="File not ready yet")
 

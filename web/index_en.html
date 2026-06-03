@@ -27,23 +27,6 @@
       --thead-text: #e5e5e2;
     }
 
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #1c1c1a;
-        --bg-secondary: #252523;
-        --text: #f0ede8;
-        --text-muted: #a8a8a2;
-        --text-hint: #6b6b67;
-        --border: rgba(255,255,255,0.12);
-        --border-hover: rgba(255,255,255,0.25);
-        --amber-bg: #412402;
-        --amber-text: #FAC775;
-        --amber-ring: #854F0B;
-        --thead-bg: #111110;
-        --thead-text: #d3d1c7;
-      }
-    }
-
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       background: var(--bg);
@@ -333,7 +316,7 @@ $(function () {
   });
 
   async function startDownload() {
-    const url = $('#urlInput').val().trim();
+    let url = $('#urlInput').val().trim();
 
     if (!url) {
       showToast('Please enter a video URL');
@@ -347,7 +330,7 @@ $(function () {
     const id = ++taskCounter;
     const startTime = new Date();
 
-    /* ── HTTP POST request for downloading video in the Message Queue ── */
+    /* ── HTTP GET request for downloading video in the Message Queue ── */
     let jobId = null;
     try {
       const res = await fetch(`/download/?url=${url}`, {
@@ -362,7 +345,7 @@ $(function () {
       console.warn('[GET failed, Download Response Error]', err);
     }
 
-    url = `https://${window.location.host}/files/${jobId}`;
+    url = `${window.location.origin}/files/${jobId}`;
     tasks[id] = { url: url, startTime: startTime, jobId: jobId, };
     $('#urlInput').val('');
 
@@ -371,8 +354,7 @@ $(function () {
 
     /* Poll every 15 s — GET request to check if file is ready */
     const pollTimer = setInterval(async function () {
-      pollCount++;
-      console.log(`[Poll #${pollCount}] Task ${id}: checking if file exists…`);
+      console.log(`[Task ${id}: checking if file exists…`);
 
       try {
         const res = await fetch(

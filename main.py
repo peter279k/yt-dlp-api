@@ -1,5 +1,6 @@
 from app.routers import *
 from fastapi import FastAPI, Request
+from fastapi.staticfiles import StaticFiles
 from fastapi_pagination import add_pagination
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -29,6 +30,7 @@ app = FastAPI(
 
 origins = ['*']
 
+app.mount('/web', StaticFiles(directory='/app/app/web'), name='web')
 app.include_router(info_router)
 app.include_router(video_info_router)
 

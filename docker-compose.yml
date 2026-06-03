@@ -1,4 +1,10 @@
 services:
+  init-permissions:
+    image: alpine
+    user: "root"
+    volumes:
+      - shared-download:/data
+    command: chown -R 1000:1000 /data
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
@@ -6,15 +12,20 @@ services:
       - "5672:5672"
   yt-dlp-api:
     build: .
-    command: gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app
+    command: gunicorn -w 4 --bind 0.0.0.0:8000 -k uvicorn.workers.UvicornWorker app.main:app
+    volumes:
+      - shared-download:/app/downloads:ro
     ports:
       - "8000:8000"
     depends_on:
       - rabbitmq
+      - worker
   worker:
     build: .
     container_name: celery_worker
     command: celery -A app.workers.worker.celery worker --loglevel=info
+    volumes:
+      - shared-download:/app/downloads
     depends_on:
       - rabbitmq
   nginx:
@@ -23,9 +34,10 @@ services:
       - "80:80"
     volumes:
       - ./nginx/nginx_config.conf:/etc/nginx/conf.d/default.conf
-      - ./web:/usr/share/nginx/html
     depends_on:
       - rabbitmq
       - worker
       - yt-dlp-api
     restart: always
+volumes:
+  shared-download:
