@@ -28,7 +28,7 @@ services:
       - ./nginx_config.conf:/etc/nginx/conf.d/default.conf
       - ./web:/usr/share/nginx/html
     depends_on:
-      - api_gateway
       - rabbitmq
+      - worker
       - yt-dlp-api
     restart: always
