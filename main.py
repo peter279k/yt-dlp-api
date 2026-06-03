@@ -16,7 +16,7 @@ You can look at the following lists:
 - Extracting the YouTube video info with the specific video URL
 '''
 
-api_version = '0.1.0'
+api_version = '0.2.0'
 app = FastAPI(
     title='yt_dlp API Server',
     description=description,
@@ -35,8 +35,8 @@ app.include_router(video_info_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_methods=['*'],
-    allow_headers=['*'],
+    allow_methods=origins,
+    allow_headers=origins,
 )
 
 @app.middleware('http')
