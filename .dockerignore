@@ -1,0 +1,10 @@
+web/
+nginx/
+LICENSE
+Pipfile
+setup.py
+README.md
+Dockerfile
+pyproject.toml
+docker-compose.yml
+yt-dlp-api.service.example

@@ -3,20 +3,17 @@ FROM python:3.12-slim
 # Set working directory
 WORKDIR /app
 
-# Set PYTHONPATH so Python can find the 'app' module
-ENV PYTHONPATH=/app
-
 # Install runtime dependencies + testing/lint tools
 COPY requirements.txt .
 COPY requirements-dev.txt .
 RUN pip install --no-cache-dir -r requirements.txt && \
+    mkdir /app/app && \
     apt update && \
     apt install -y ffmpeg curl unzip
 
 
 # Copy FastAPI app
-COPY ./routers ./app/
-COPY ./main.py ./app/
+COPY . /app/app/
 
 # Create downloads directory
 RUN mkdir -p /app/downloads

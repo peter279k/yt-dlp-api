@@ -4,7 +4,7 @@ from pathlib import Path
 import yt_dlp
 from celery import Celery
 
-DOWNLOAD_DIR = f'{Path(__file__).parent.parent}/downloads'
+DOWNLOAD_DIR = Path('/app/app/download/')
 DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 celery = Celery(

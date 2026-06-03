@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 from fastapi import HTTPException, Query
 from fastapi.responses import FileResponse
 
-from worker import DOWNLOAD_DIR, download_video_task
+from app.workers.worker import DOWNLOAD_DIR, download_video_task
 
 
 async def get_api_version():

@@ -6,9 +6,7 @@ services:
       - "5672:5672"
   yt-dlp-api:
     build: .
-    command: gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app
-    volumes:
-      - ./app:/app/app
+    command: gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app
     ports:
       - "8000:8000"
     depends_on:
@@ -16,10 +14,7 @@ services:
   worker:
     build: .
     container_name: celery_worker
-    command: celery -A app.worker.celery worker --loglevel=info
-    volumes:
-      - ./app:/app/app
-      - ./downloads:/app/downloads
+    command: celery -A app.workers.worker.celery worker --loglevel=info
     depends_on:
       - rabbitmq
   nginx:
