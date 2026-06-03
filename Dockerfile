@@ -11,7 +11,7 @@ COPY requirements.txt .
 COPY requirements-dev.txt .
 RUN pip install --no-cache-dir -r requirements.txt && \
     apt update && \
-    apt install -y ffmpeg curl
+    apt install -y ffmpeg curl unzip
 
 
 # Copy FastAPI app
@@ -21,8 +21,8 @@ COPY ./main.py ./app/
 # Create downloads directory
 RUN mkdir -p /app/downloads
 
-RUN groupadd -g 10000 appgroup && \
-    useradd -u 1000- -g appgroup -m -s /bin/bash appuser && \
+RUN groupadd -g 1000 appgroup && \
+    useradd -u 1000 -g appgroup -m -s /bin/bash appuser && \
     chown -R appuser:appgroup /app/
 
 USER appuser
