@@ -25,7 +25,13 @@ def download_video_task(url: str, job_id: str) -> str:
             },
         },
     }
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([url])
+
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([url])
+    except Exception as e:
+        log_path = os.path.join(DOWNLOAD_DIR, f"{job_id}.log")
+        with open(log_path, 'w') as f:
+            f.write(f'{str(e)}\n')
 
     return filepath

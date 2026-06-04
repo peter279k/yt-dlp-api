@@ -63,6 +63,9 @@ async def download_video(url: str = Query(...)) -> dict:
 
 async def check_status(job_id: str) -> dict:
     filepath = os.path.join(DOWNLOAD_DIR, f"{job_id}.mp4")
+    log_path = os.path.join(DOWNLOAD_DIR, f"{job_id}.log")
+    if os.path.exists(log_path):
+        return {"status": "failed"}
     if os.path.exists(filepath):
         return {
             "status": "completed",

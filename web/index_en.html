@@ -370,6 +370,11 @@ $(function () {
           clearInterval(pollTimer);
           console.log(`[Task ${id}] File ready — calling completeTask`);
           completeTask(id);
+        } else if (fileReady === 'failed') {
+          clearInterval(pollTimer);
+          console.log(`[Task ${id}] File downloading is failed`);
+          alert('Download video has been failed.');
+        }
         } else {
           console.log(`[Task ${id}] File not ready yet, waiting…`);
         }
