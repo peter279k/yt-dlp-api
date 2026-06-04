@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>影片下載器</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --bg-secondary: #f5f5f3;
+      --text: #1a1a18;
+      --text-muted: #6b6b67;
+      --text-hint: #9ca3af;
+      --border: rgba(0,0,0,0.12);
+      --border-hover: rgba(0,0,0,0.25);
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --green: #1a7f50;
+      --green-dark: #155f3c;
+      --amber-bg: #FAEEDA;
+      --amber-text: #854F0B;
+      --amber-ring: #FAC775;
+      --thead-bg: #2c2c2a;
+      --thead-text: #e5e5e2;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2.5rem 1.5rem;
+    }
+
+    .page { max-width: 860px; margin: 0 auto; }
+
+    /* ── 標題區 ── */
+    .header { margin-bottom: 2rem; }
+    .header h1 {
+      font-size: 26px;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+    .header h1 svg { flex-shrink: 0; }
+    .header p { font-size: 14px; color: var(--text-muted); }
+
+    /* ── 輸入列 ── */
+    .input-row { display: flex; gap: 10px; margin-bottom: 1.5rem; }
+
+    #urlInput {
+      flex: 1;
+      height: 42px;
+      padding: 0 14px;
+      font-size: 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    #urlInput::placeholder { color: var(--text-hint); }
+    #urlInput:focus {
+      border-color: var(--border-hover);
+      box-shadow: 0 0 0 3px rgba(26,127,80,0.12);
+    }
+
+    #startBtn {
+      height: 42px;
+      padding: 0 22px;
+      font-size: 14px;
+      font-weight: 500;
+      border: none;
+      border-radius: var(--radius-md);
+      background: var(--green);
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      white-space: nowrap;
+      transition: background 0.15s, transform 0.1s;
+    }
+    #startBtn:hover { background: var(--green-dark); }
+    #startBtn:active { transform: scale(0.97); }
+    #startBtn:disabled { background: #9ca3af; cursor: not-allowed; }
+
+    /* ── 表格 ── */
+    .table-wrap {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+
+    thead { background: var(--thead-bg); }
+    thead th {
+      color: var(--thead-text);
+      font-weight: 500;
+      font-size: 13px;
+      padding: 11px 16px;
+      text-align: left;
+    }
+    thead th:first-child  { width: 64px; }
+    thead th:nth-child(3) { width: 160px; }
+    thead th:last-child   { width: 130px; text-align: center; }
+
+    tbody tr {
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+      transition: background 0.12s;
+    }
+    tbody tr:first-child { border-top: none; }
+    tbody tr:hover { background: var(--bg-secondary); }
+
+    tbody td {
+      padding: 11px 16px;
+      font-size: 14px;
+      color: var(--text);
+      vertical-align: middle;
+    }
+    tbody td:last-child { text-align: center; }
+
+    /* ── 空白提示 ── */
+    .empty-state {
+      padding: 3.5rem 1rem;
+      text-align: center;
+      color: var(--text-hint);
+      font-size: 14px;
+    }
+    .empty-icon {
+      width: 36px;
+      height: 36px;
+      margin: 0 auto 10px;
+      opacity: 0.35;
+    }
+
+    /* ── 序號圓圈 ── */
+    .seq-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    /* ── 連結欄截斷 ── */
+    .url-cell {
+      font-size: 13px;
+      color: var(--text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 0;
+    }
+
+    /* ── 時間欄 ── */
+    .time-cell {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── 處理中 badge ── */
+    .badge-processing {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--amber-text);
+      background: var(--amber-bg);
+      padding: 4px 10px;
+      border-radius: 99px;
+    }
+    .spinner {
+      width: 12px;
+      height: 12px;
+      border: 2px solid var(--amber-ring);
+      border-top-color: var(--amber-text);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── 下載按鈕 ── */
+    .btn-download {
+      height: 32px;
+      padding: 0 14px;
+      font-size: 13px;
+      font-weight: 500;
+      border: none;
+      border-radius: var(--radius-md);
+      background: var(--green);
+      color: #fff;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-download:hover { background: var(--green-dark); }
+    .btn-download:active { transform: scale(0.96); }
+
+    /* ── 淡入動畫 ── */
+    .fade-in { animation: fadeIn 0.22s ease; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Toast 通知 ── */
+    #toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: #2c2c2a;
+      color: #f1efe8;
+      font-size: 13px;
+      padding: 10px 18px;
+      border-radius: var(--radius-md);
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.22s, transform 0.22s;
+      pointer-events: none;
+      z-index: 9999;
+      max-width: 280px;
+    }
+    #toast.show { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- 標題 -->
+  <div class="header">
+    <h1>
+      <!-- YouTube icon -->
+      <svg class="yt-icon" width="28" height="28" viewBox="0 0 24 24" fill="#e24b4a" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M21.8 8s-.2-1.4-.8-2c-.8-.8-1.7-.8-2.1-.9C16.2 5 12 5 12 5s-4.2 0-6.9.2c-.4.1-1.3.1-2.1.9-.6.6-.8 2-.8 2S2 9.6 2 11.2v1.5c0 1.6.2 3.2.2 3.2s.2 1.4.8 2c.8.8 1.8.8 2.3.8C6.8 19 12 19 12 19s4.2 0 6.9-.2c.4-.1 1.3-.1 2.1-.9.6-.6.8-2 .8-2s.2-1.6.2-3.2v-1.5C22 9.6 21.8 8 21.8 8zM10 14.5v-5l5.5 2.5L10 14.5z"/>
+      </svg>
+      影片下載器
+    </h1>
+    <p>貼上影片網址，點擊開始即可加入下載佇列</p>
+  </div>
+
+  <!-- 功能 1 & 2：輸入框 + 開始按鈕 -->
+  <div class="input-row">
+    <input id="urlInput" type="text" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off" />
+    <button id="startBtn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      開始
+    </button>
+  </div>
+
+  <!-- 功能 3 & 4 & 5：任務表格 -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>序號</th>
+          <th>影片連結</th>
+          <th>開始時間</th>
+          <th>狀態</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr id="emptyRow">
+          <td colspan="4" class="empty-state">
+            <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+            </svg>
+            尚無下載任務，請輸入影片連結並點擊開始
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- Toast 通知 -->
+<div id="toast"></div>
+
+<script>
+$(function () {
+
+  /* ── 狀態 ── */
+  let taskCounter = 0;
+  const tasks = {};
+
+  /* ── 功能 1 & 2：文字框 Enter + 開始按鈕 ── */
+  $('#urlInput').on('keydown', function (e) {
+    if (e.key === 'Enter') startDownload();
+  });
+
+  $('#startBtn').on('click', function () {
+    startDownload();
+  });
+
+  function startDownload() {
+    const url = $('#urlInput').val().trim();
+
+    if (!url) {
+      showToast('請先輸入影片連結');
+      return;
+    }
+    if (!isValidUrl(url)) {
+      showToast('請輸入有效的 YouTube 連結');
+      return;
+    }
+
+    const id = ++taskCounter;
+    const startTime = new Date();
+
+    tasks[id] = { url, startTime, blob: null };
+    $('#urlInput').val('');
+
+    /* 功能 3：插入「處理中」列 */
+    appendRow(id, url, startTime);
+
+    /* 模擬非同步下載（3–6 秒隨機延遲） */
+    const delay = 3000 + Math.random() * 3000;
+    setTimeout(function () {
+      completeTask(id);
+    }, delay);
+  }
+
+  /* ── 功能 3：新增資料列（處理中狀態）── */
+  function appendRow(id, url, startTime) {
+    $('#emptyRow').remove();
+
+    const $row = $('<tr>', { id: 'row-' + id, class: 'fade-in' }).append(
+      $('<td>').append(
+        $('<span>', { class: 'seq-badge', text: id })
+      ),
+      $('<td>', { class: 'url-cell', title: url, text: url }),
+      $('<td>', { class: 'time-cell', text: formatTime(startTime) }),
+      $('<td>', { class: 'status-cell', id: 'status-' + id }).append(
+        $('<span>', { class: 'badge-processing' }).append(
+          $('<span>', { class: 'spinner' }),
+          $('<span>', { text: '處理中...' })
+        )
+      )
+    );
+
+    $('#tbody').prepend($row);
+  }
+
+  /* ── 功能 4：完成後狀態轉為「下載」按鈕 ── */
+  function completeTask(id) {
+    const content = 'Simulated video file\nURL: ' + tasks[id].url + '\nTime: ' + tasks[id].startTime.toISOString();
+    tasks[id].blob = new Blob([content], { type: 'video/mp4' });
+
+    const $btn = $('<button>', {
+      class: 'btn-download',
+      'data-id': id
+    }).append(
+      $('<svg>', {
+        width: 14, height: 14,
+        viewBox: '0 0 24 24',
+        fill: 'none',
+        stroke: 'currentColor',
+        'stroke-width': '2.2',
+        'stroke-linecap': 'round',
+        'stroke-linejoin': 'round',
+        'aria-hidden': 'true'
+      }).append(
+        $('<path>', { d: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4' }),
+        $('<polyline>', { points: '7 10 12 15 17 10' }),
+        $('<line>', { x1: '12', y1: '15', x2: '12', y2: '3' })
+      ),
+      $('<span>', { text: '下載' })
+    );
+
+    $('#status-' + id).empty().append($btn);
+    showToast('第 ' + id + ' 筆任務處理完成！');
+  }
+
+  /* ── 功能 5：點擊下載按鈕，觸發瀏覽器下載 ── */
+  $('#tbody').on('click', '.btn-download', function () {
+    const id = $(this).data('id');
+    const task = tasks[id];
+    if (!task || !task.blob) return;
+
+    const objectUrl = URL.createObjectURL(task.blob);
+    const $a = $('<a>', { href: objectUrl, download: 'video_' + id + '.mp4' });
+    $('body').append($a);
+    $a[0].click();
+    $a.remove();
+    setTimeout(function () { URL.revokeObjectURL(objectUrl); }, 1000);
+
+    showToast('下載已開始');
+  });
+
+  /* ── 工具函式 ── */
+  function isValidUrl(url) {
+    return url.includes('youtube.com') || url.includes('youtu.be');
+  }
+
+  function formatTime(date) {
+    const pad = function (n) { return String(n).padStart(2, '0'); };
+    return pad(date.getHours()) + ':' + pad(date.getMinutes()) + ':' + pad(date.getSeconds());
+  }
+
+  let toastTimer;
+  function showToast(msg) {
+    const $t = $('#toast');
+    $t.text(msg).addClass('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { $t.removeClass('show'); }, 2200);
+  }
+
+});
+</script>
+</body>
+</html>

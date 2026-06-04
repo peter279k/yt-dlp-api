@@ -10,20 +10,15 @@ jobs:
         uses: actions/checkout@master
         with:
           fetch-depth: 1
-      - name: Set up Python 3.8
+      - name: Set up Python 3.12
         uses: actions/setup-python@v2
         with:
-          python-version: '3.8'
-      - name: Install the pipenv
-        run: pip install pipenv --user
-      - name: Setup Python virtual environment and install dependencies
-        run: |
-          PATH=$PATH:/home/peter/.local/bin
-          pipenv install
-      - name: Setup Python virtual environment and install development dependencies
-        run: |
-          PATH=$PATH:/home/peter/.local/bin
-          pipenv install --dev
+          python-version: '3.12'
+      - name: Building the Docker Compose
+        run: docker compose build
+      - name: Running the Docker Compose
+        run: docker compose up -d
       - name: Run tests
         run: |
-          pipenv run pytest -s
+          docker compose exec yt-dlp-api pip install -r requirements-dev.txt
+          docker compose exec yt-dlp-api python -m pytest -s ./app/tests

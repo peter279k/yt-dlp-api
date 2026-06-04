@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Video Downloader</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --bg-secondary: #f5f5f3;
+      --text: #1a1a18;
+      --text-muted: #6b6b67;
+      --text-hint: #9ca3af;
+      --border: rgba(0,0,0,0.12);
+      --border-hover: rgba(0,0,0,0.25);
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --green: #1a7f50;
+      --green-dark: #155f3c;
+      --amber-bg: #FAEEDA;
+      --amber-text: #854F0B;
+      --amber-ring: #FAC775;
+      --thead-bg: #2c2c2a;
+      --thead-text: #e5e5e2;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2.5rem 1.5rem;
+    }
+
+    .page { max-width: 860px; margin: 0 auto; }
+
+    /* ── Header ── */
+    .header { margin-bottom: 2rem; }
+    .header h1 {
+      font-size: 26px;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+    .header h1 svg { flex-shrink: 0; }
+    .header p { font-size: 14px; color: var(--text-muted); }
+
+    /* ── Input row ── */
+    .input-row { display: flex; gap: 10px; margin-bottom: 1.5rem; }
+
+    #urlInput {
+      flex: 1;
+      height: 42px;
+      padding: 0 14px;
+      font-size: 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    #urlInput::placeholder { color: var(--text-hint); }
+    #urlInput:focus {
+      border-color: var(--border-hover);
+      box-shadow: 0 0 0 3px rgba(26,127,80,0.12);
+    }
+
+    #startBtn {
+      height: 42px;
+      padding: 0 22px;
+      font-size: 14px;
+      font-weight: 500;
+      border: none;
+      border-radius: var(--radius-md);
+      background: var(--green);
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      white-space: nowrap;
+      transition: background 0.15s, transform 0.1s;
+    }
+    #startBtn:hover { background: var(--green-dark); }
+    #startBtn:active { transform: scale(0.97); }
+    #startBtn:disabled { background: #9ca3af; cursor: not-allowed; }
+
+    /* ── Table ── */
+    .table-wrap {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+
+    thead { background: var(--thead-bg); }
+    thead th {
+      color: var(--thead-text);
+      font-weight: 500;
+      font-size: 13px;
+      padding: 11px 16px;
+      text-align: left;
+    }
+    thead th:first-child  { width: 64px; }
+    thead th:nth-child(3) { width: 160px; }
+    thead th:last-child   { width: 130px; text-align: center; }
+
+    tbody tr {
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+      transition: background 0.12s;
+    }
+    tbody tr:first-child { border-top: none; }
+    tbody tr:hover { background: var(--bg-secondary); }
+
+    tbody td {
+      padding: 11px 16px;
+      font-size: 14px;
+      color: var(--text);
+      vertical-align: middle;
+    }
+    tbody td:last-child { text-align: center; }
+
+    /* ── Empty state ── */
+    .empty-state {
+      padding: 3.5rem 1rem;
+      text-align: center;
+      color: var(--text-hint);
+      font-size: 14px;
+    }
+    .empty-icon {
+      width: 36px;
+      height: 36px;
+      margin: 0 auto 10px;
+      opacity: 0.35;
+    }
+
+    /* ── Number badge ── */
+    .seq-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    /* ── URL cell truncation ── */
+    .url-cell {
+      font-size: 13px;
+      color: var(--text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 0;
+    }
+
+    /* ── Time column ── */
+    .time-cell {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── Processing badge ── */
+    .badge-processing {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--amber-text);
+      background: var(--amber-bg);
+      padding: 4px 10px;
+      border-radius: 99px;
+    }
+    .spinner {
+      width: 12px;
+      height: 12px;
+      border: 2px solid var(--amber-ring);
+      border-top-color: var(--amber-text);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Download button ── */
+    .btn-download {
+      height: 32px;
+      padding: 0 14px;
+      font-size: 13px;
+      font-weight: 500;
+      border: none;
+      border-radius: var(--radius-md);
+      background: var(--green);
+      color: #fff;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-download:hover { background: var(--green-dark); }
+    .btn-download:active { transform: scale(0.96); }
+
+    /* ── Fade-in animation ── */
+    .fade-in { animation: fadeIn 0.22s ease; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Toast notification ── */
+    #toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: #2c2c2a;
+      color: #f1efe8;
+      font-size: 13px;
+      padding: 10px 18px;
+      border-radius: var(--radius-md);
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.22s, transform 0.22s;
+      pointer-events: none;
+      z-index: 9999;
+      max-width: 280px;
+    }
+    #toast.show { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>
+      <!-- YouTube icon -->
+      <svg class="yt-icon" width="28" height="28" viewBox="0 0 24 24" fill="#e24b4a" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M21.8 8s-.2-1.4-.8-2c-.8-.8-1.7-.8-2.1-.9C16.2 5 12 5 12 5s-4.2 0-6.9.2c-.4.1-1.3.1-2.1.9-.6.6-.8 2-.8 2S2 9.6 2 11.2v1.5c0 1.6.2 3.2.2 3.2s.2 1.4.8 2c.8.8 1.8.8 2.3.8C6.8 19 12 19 12 19s4.2 0 6.9-.2c.4-.1 1.3-.1 2.1-.9.6-.6.8-2 .8-2s.2-1.6.2-3.2v-1.5C22 9.6 21.8 8 21.8 8zM10 14.5v-5l5.5 2.5L10 14.5z"/>
+      </svg>
+      Video Downloader
+    </h1>
+    <p>Paste a video URL below and click Start to add it to the download queue</p>
+  </div>
+
+  <!-- Feature 1 & 2: URL input + Start button -->
+  <div class="input-row">
+    <input id="urlInput" type="text" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off" />
+    <button id="startBtn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Start
+    </button>
+  </div>
+
+  <!-- Feature 3 & 4 & 5: Task table -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Video URL</th>
+          <th>Started At</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr id="emptyRow">
+          <td colspan="4" class="empty-state">
+            <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+            </svg>
+            No download tasks yet — paste a URL and click Start
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- Toast notification -->
+<div id="toast"></div>
+
+<script>
+$(function () {
+
+  /* ── Status ── */
+  let taskCounter = 0;
+  const tasks = {};
+
+  /* ── Feature 1 & 2: URL input + Start button ── */
+  $('#urlInput').on('keydown', function (e) {
+    if (e.key === 'Enter') startDownload();
+  });
+
+  $('#startBtn').on('click', function () {
+    startDownload();
+  });
+
+  async function startDownload() {
+    let url = $('#urlInput').val().trim();
+
+    if (!url) {
+      showToast('Please enter a video URL');
+      return;
+    }
+    if (!isValidUrl(url)) {
+      showToast('Please enter a valid YouTube URL');
+      return;
+    }
+
+    const id = ++taskCounter;
+    const startTime = new Date();
+
+    /* ── HTTP GET request for downloading video in the Message Queue ── */
+    let jobId = null;
+    try {
+      const res = await fetch(`/download/?url=${url}`, {
+        method: 'GET',
+      });
+      const data = await res.json();
+      jobId = data?.job_id ?? '';
+      stat = data?.status ?? '';
+
+      console.log('[GET Download response]', data);
+    } catch (err) {
+      console.warn('[GET failed, Download Response Error]', err);
+    }
+
+    url = `${window.location.origin}/files/${jobId}`;
+    tasks[id] = { url: url, startTime: startTime, jobId: jobId, };
+    $('#urlInput').val('');
+
+    /* Feature 3: insert processing row */
+    appendRow(id, url, startTime, jobId);
+
+    /* Poll every 15 s — GET request to check if file is ready */
+    const pollTimer = setInterval(async function () {
+      console.log(`[Task ${id}: checking if file exists…`);
+
+      try {
+        const res = await fetch(
+          `/status/${jobId}`,
+          { method: 'GET' },
+        );
+        const data = await res.json();
+        console.log('[GET response]', data);
+
+        const fileReady = data?.status ?? '';
+
+        if (fileReady === 'completed') {
+          clearInterval(pollTimer);
+          console.log(`[Task ${id}] File ready — calling completeTask`);
+          completeTask(id);
+        } else if (fileReady === 'failed') {
+          clearInterval(pollTimer);
+          console.log(`[Task ${id}] File downloading is failed`);
+          alert('Download video has been failed.');
+        }
+        } else {
+          console.log(`[Task ${id}] File not ready yet, waiting…`);
+        }
+      } catch (err) {
+        console.warn(`[Task ${id}] GET request failed`, err);
+      }
+    }, 15000);
+  }
+
+  /* ── Feature 3: append row (processing state) ── */
+  function appendRow(id, url, startTime, jobId) {
+    $('#emptyRow').remove();
+
+    const $row = $('<tr>', { id: 'row-' + id, class: 'fade-in' }).append(
+      $('<td>').append(
+        $('<span>', { class: 'seq-badge', text: id })
+      ),
+      $('<td>', { class: 'url-cell', title: url, text: url }),
+      $('<td>', { class: 'time-cell', text: formatTime(startTime) }),
+      $('<td>', { class: 'status-cell', id: 'status-' + id }).append(
+        $('<span>', { class: 'badge-processing' }).append(
+          $('<span>', { class: 'spinner' }),
+          $('<span>', { text: 'Processing...' })
+        )
+      )
+    );
+
+    $('#tbody').prepend($row);
+  }
+
+  /* ── Feature 4: swap status to Open Video button ── */
+  function completeTask(id) {
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(svgNS, 'svg');
+    $(svg).attr({ width: 14, height: 14, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2.2', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true' });
+    const p1 = document.createElementNS(svgNS, 'path');
+    $(p1).attr('d', 'M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6');
+    const pl = document.createElementNS(svgNS, 'polyline');
+    $(pl).attr('points', '15 3 21 3 21 9');
+    const ln = document.createElementNS(svgNS, 'line');
+    $(ln).attr({ x1: '10', y1: '14', x2: '21', y2: '3' });
+    svg.append(p1, pl, ln);
+    const $btn = $('<button>', { class: 'btn-download', 'data-id': id }).append(svg, $('<span>', { text: 'Open Video' }));
+
+    $('#status-' + id).empty().append($btn);
+    showToast('Task #' + id + ' is ready!');
+  }
+
+  /* ── Feature 5: open video URL in a new tab ── */
+  $('#tbody').on('click', '.btn-download', function () {
+    const id = $(this).data('id');
+    const task = tasks[id];
+    if (!task) return;
+
+    window.open(task.url, '_blank', 'noopener,noreferrer');
+    showToast('Video opened in a new tab');
+  });
+
+  /* ── Utilities ── */
+  function isValidUrl(url) {
+    return url.includes('youtube.com') || url.includes('youtu.be');
+  }
+
+  function formatTime(date) {
+    const pad = function (n) { return String(n).padStart(2, '0'); };
+    return pad(date.getHours()) + ':' + pad(date.getMinutes()) + ':' + pad(date.getSeconds());
+  }
+
+  let toastTimer;
+  function showToast(msg) {
+    const $t = $('#toast');
+    $t.text(msg).addClass('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { $t.removeClass('show'); }, 2200);
+  }
+
+});
+</script>
+</body>
+</html>
