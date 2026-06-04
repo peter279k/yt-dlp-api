@@ -4,6 +4,7 @@ Pipfile
 setup.py
 README.md
 Dockerfile
+rabbitmq.conf
 pyproject.toml
 docker-compose.yml
 yt-dlp-api.service.example
