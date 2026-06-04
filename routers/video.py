@@ -38,4 +38,4 @@ async def get_file(filename: str) -> FileResponse:
     if not os.path.exists(filepath):
         raise HTTPException(status_code=404, detail="File not ready yet")
 
-    return FileResponse(filepath, filename=filename, media_type="video/mp4")
+    return FileResponse(filepath, filename=f"{filename}.mp4", media_type="video/mp4")
