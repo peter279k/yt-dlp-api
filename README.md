@@ -21,6 +21,16 @@
 - Using the prefered web browser to browse the `http://localhost/web/index_en.html`.
 - Enjoy it!
 
+# Tests
+
+- Once the Docker Compose has been done, it can run following commands to execute tests:
+
+```bash
+docker compose exec yt-dlp-api pip install -r requirements-dev.txt
+docker compose exec yt-dlp-api python -m pytest -s ./app/tests
+```
+
 # Tips
 
 - If you want to change the Nginx port number, please edit the [nginx.ports](https://github.com/peter279k/yt-dlp-api/blob/master/docker-compose.yml#L60) setting.
+- If you want to customize yt-dlp options, please edit this [dict variable](https://github.com/peter279k/yt-dlp-api/blob/master/workers/worker.py#L19).
