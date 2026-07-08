@@ -1,12 +1,12 @@
 services:
   init-permissions:
-    image: alpine
+    image: docker.io/library/alpine
     user: "root"
     volumes:
       - shared-download:/data
     command: chown -R 1000:1000 /data
   rabbitmq:
-    image: rabbitmq:3-management
+    image: docker.io/library/rabbitmq:3-management
     container_name: rabbitmq
     volumes:
       - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
@@ -58,7 +58,7 @@ services:
       - rabbitmq
     restart: unless-stopped
   nginx:
-    image: nginx:latest
+    image: docker.io/library/nginx:latest
     ports:
       - "80:80"
     volumes:
