@@ -20,6 +20,7 @@ services:
         reservations:
           cpus: '0.25'
           memory: 256M
+    restart: unless-stopped
   yt-dlp-api:
     build: .
     command: gunicorn -w 4 --bind 0.0.0.0:8000 -k uvicorn.workers.UvicornWorker app.main:app
@@ -38,6 +39,7 @@ services:
     depends_on:
       - rabbitmq
       - worker
+    restart: unless-stopped
   worker:
     build: .
     container_name: celery_worker
@@ -54,6 +56,7 @@ services:
           memory: 128M
     depends_on:
       - rabbitmq
+    restart: unless-stopped
   nginx:
     image: nginx:latest
     ports:
