@@ -23,4 +23,4 @@ RUN groupadd -g 1000 appgroup && \
 USER appuser
 
 RUN curl -fsSL https://deno.land/install.sh | sh && \
-    python -m playwright install firefox
+    python -m playwright install chromium
