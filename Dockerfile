@@ -9,7 +9,8 @@ COPY requirements-dev.txt .
 RUN pip install --no-cache-dir -r requirements.txt && \
     mkdir /app/app && \
     apt update && \
-    apt install -y curl unzip
+    apt install -y curl unzip && \
+    playwright install firefox
 
 
 # Copy FastAPI app

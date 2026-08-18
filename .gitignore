@@ -1,4 +1,5 @@
 *.pye
+venv/
 *.egg-info/
 __pycache__/
 nohup.out
