@@ -2,5 +2,5 @@ fastapi
 fastapi-pagination
 uvicorn==0.23.2
 gunicorn==21.2.0
-yt_dlp
+yt_dlp[default]
 celery
