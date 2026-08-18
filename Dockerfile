@@ -10,8 +10,7 @@ RUN pip install --no-cache-dir -r requirements.txt && \
     mkdir /app/app && \
     apt update && \
     apt install -y curl unzip && \
-    python -m playwright install-deps && \
-    python -m playwright install firefox
+    python -m playwright install-deps
 
 
 # Copy FastAPI app
@@ -23,4 +22,5 @@ RUN groupadd -g 1000 appgroup && \
 
 USER appuser
 
-RUN curl -fsSL https://deno.land/install.sh | sh
+RUN curl -fsSL https://deno.land/install.sh | sh && \
+    python -m playwright install firefox
