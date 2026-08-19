@@ -65,7 +65,7 @@ def _write_netscape_cookiefile(cookies: list[dict], path: str) -> None:
 
 @celery.task
 def download_video_task(url: str, job_id: str) -> str:
-    #cookie_content = get_cookie_from_playwright()
+    cookie_content = get_cookie_from_playwright()
     cookie_file = '/tmp/cookies.txt'
 
     filepath = os.path.join(DOWNLOAD_DIR, f"{job_id}.mp4")
@@ -75,7 +75,7 @@ def download_video_task(url: str, job_id: str) -> str:
         extractor_args = {"youtube": youtube_args}
 
         ydl_opts = {
-            #'cookiefile': cookie_file,
+            'cookiefile': cookie_file,
             'extractor_args': extractor_args,
             "outtmpl": filepath,
             "format": "best",
