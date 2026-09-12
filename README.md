@@ -34,3 +34,7 @@ docker compose exec yt-dlp-api python -m pytest -s ./app/tests
 
 - If you want to change the Nginx port number, please edit the [nginx.ports](https://github.com/peter279k/yt-dlp-api/blob/master/docker-compose.yml#L60) setting.
 - If you want to customize yt-dlp options, please edit this [dict variable](https://github.com/peter279k/yt-dlp-api/blob/master/workers/worker.py#L19).
+
+# Hosted option
+
+If you don’t want to self-host with Docker, [Vid Kraken](https://vidkraken.com) is a managed YouTube download API (info / mp3 / mp4 endpoints).
